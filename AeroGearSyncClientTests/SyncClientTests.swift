@@ -4,11 +4,13 @@ import AeroGearSyncClient
 import AeroGearSync
 
 class SyncClientTests: XCTestCase {
-    
+
     typealias T = JsonConverter.Json
-    var dataStore: InMemoryDataStore<T>!
-    var synchonizer: JsonDiffMatchPatchSynchronizer!
-    var engine: ClientSyncEngine<JsonDiffMatchPatchSynchronizer, InMemoryDataStore<T>>!
+    typealias E = JsonPatchEdit
+
+    var dataStore: InMemoryDataStore<T, E>!
+    var synchonizer: JsonPatchSynchronizer!
+    var engine: ClientSyncEngine<JsonPatchSynchronizer, InMemoryDataStore<T, E>>!
 
     class StringContentSerializer : ContentSerializer {
         func asString(content: String) -> String {
@@ -26,7 +28,7 @@ class SyncClientTests: XCTestCase {
     override func setUp() {
         super.setUp()
         self.dataStore = InMemoryDataStore()
-        self.synchonizer = JsonDiffMatchPatchSynchronizer()
+        self.synchonizer = JsonPatchSynchronizer()
         self.engine = ClientSyncEngine(synchronizer: synchonizer, dataStore: dataStore)
     }
     // TODO AGIOS-344 move integration test separate target

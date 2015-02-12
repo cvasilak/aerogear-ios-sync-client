@@ -6,7 +6,7 @@ import Starscream
 /**
 * A Differential Synchronization client that uses the WebSocket as the transport protocol.
 */
-public class SyncClient<CS:ClientSynchronizer, D:DataStore, S:ContentSerializer where CS.T == D.T, CS.T == S.T>: WebSocketDelegate {
+public class SyncClient<CS:ClientSynchronizer, D:DataStore, S:ContentSerializer where CS.T == D.T, CS.D == D.D, CS.T == S.T>: WebSocketDelegate {
 
     typealias T = CS.T
     var ws: WebSocket!
@@ -94,7 +94,7 @@ public class SyncClient<CS:ClientSynchronizer, D:DataStore, S:ContentSerializer 
         if let patchMessage = JsonConverter.asPatchMessage(text) {
             syncEngine.patch(patchMessage)
         } else {
-            println("Recieved none patchMessage: \(text)")
+            println("Received none patchMessage: \(text)")
         }
     }
 

@@ -6,8 +6,10 @@
 //  Copyright (c) 2014 Daniel Bevenius. All rights reserved.
 //
 
+/*
 import Foundation
 import AeroGearSync
+
 
 public class JsonDiffMatchPatchSynchronizer: ClientSynchronizer {
 
@@ -55,3 +57,4 @@ public class JsonDiffMatchPatchSynchronizer: ClientSynchronizer {
     }
 
 }
+*/
