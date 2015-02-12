@@ -33,7 +33,7 @@ public class JsonConverter {
     :param: doc the ClientDocument to convert into JSON
     :returns: the JSON representation of the PatchMessage
     */
-    public class func patchMsgAsJson(patchMsg: PatchMessage) -> String {
+    public class func patchMsgAsJson(patchMsg: PatchMessage<JsonPatchEdit>) -> String {
         // TODO: This should be solved on the server side.
         var str = "{\"msgType\":\"patch\",\"id\":\"" + patchMsg.documentId + "\",\"clientId\":\"" + patchMsg.clientId + "\""
         str += ",\"edits\":["
@@ -46,8 +46,16 @@ public class JsonConverter {
             str += "\",\"diffs\":["
             let diffscount = edit.diffs.count-1
             for y in 0...diffscount {
-                let text = edit.diffs[y].text.stringByReplacingOccurrencesOfString("\"", withString: "\\\"", options: NSStringCompareOptions.LiteralSearch, range: nil)
-                str += "{\"operation\":\"" + edit.diffs[y].operation.rawValue + "\",\"text\":\"" + text + "\"}"
+                str += "{\"op\":\"" + edit.diffs[y].operation.rawValue + "\", \"path\":\"" + edit.diffs[y].path + "\","
+                str += "\"value\":"
+                var value:AnyObject? = edit.diffs[y].value
+                if var val = value as? String { // if string escape accordingly
+                    val = val.stringByReplacingOccurrencesOfString("\"", withString: "\\\"", options: NSStringCompareOptions.LiteralSearch, range: nil)
+                    str += "\"" + val + "\"}"
+                } else {
+                    str += "\(value)" + "\"}"
+                }
+                
                 if y != diffscount {
                     str += ","
                 }
@@ -63,19 +71,19 @@ public class JsonConverter {
     :param: jsonString the JSON respresentation of a PatchMessage
     :returns: an optional PatchMessage object instance, or Optional.None if a conversion error occured
     */
-    public class func asPatchMessage(jsonString: String) -> PatchMessage? {
+    public class func asPatchMessage(jsonString: String) -> PatchMessage<JsonPatchEdit>? {
         if let dict = asDictionary(jsonString) {
             let json = JSON(dict)
             let id = json["id"].string!
             let clientId = json["clientId"].string!
-            var edits = Array<Edit>()
+            var edits = Array<JsonPatchEdit>()
             for (key: String, jsonEdit) in json["edits"] {
-                var diffs = Array<Edit.Diff>()
+                var diffs = Array<JsonPatchDiff>()
                 for (key: String, jsonDiff: JSON) in jsonEdit["diffs"] {
-                    diffs.append(Edit.Diff(operation: Edit.Operation(rawValue: jsonDiff["operation"].stringValue)!,
-                        text: jsonDiff["text"].stringValue))
+                    diffs.append(JsonPatchDiff(operation: JsonPatchDiff.Operation(rawValue: jsonDiff["operation"].stringValue)!,
+                        path: jsonDiff["path"].stringValue, value: jsonDiff["value"].stringValue))
                 }
-                edits.append(Edit(clientId: clientId,
+                edits.append(JsonPatchEdit(clientId: clientId,
                     documentId: id,
                     clientVersion: jsonEdit["clientVersion"].number! as Int,
                     serverVersion: jsonEdit["serverVersion"].number! as Int,
